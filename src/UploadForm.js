@@ -1,17 +1,36 @@
 // UploadForm.js
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Button, Snackbar } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
 import Popup from './Popup';
-import { Button } from '@mui/material';
 import './UploadForm.css';
 
 function UploadForm() {
   const [file, setFile] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    setFile(selectedFile);
+  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+    // Assuming you want to handle only the first dropped file
+    if (acceptedFiles.length > 0) {
+      setFile(acceptedFiles[0]);
+    }
+
+    if (rejectedFiles.length > 0) {
+      setOpenSnackbar(true);
+    }
+  }, []);
+
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
   };
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    onDropRejected: () => setOpenSnackbar(true),
+    accept: ['.pdf', '.docx', '.txt'],
+  });
 
   const handleUpload = () => {
     setShowPopup(true);
@@ -24,8 +43,21 @@ function UploadForm() {
 
   return (
     <div>
-      <input type="file" accept=".pdf, .docx, .txt" onChange={handleFileChange} />
-      <Button variant="contained" color="primary" onClick={handleUpload}>
+      <div {...getRootProps()} className="dropzone">
+        <input {...getInputProps()} />
+        <span role="img" aria-label="document">
+          📄
+        </span>
+        {file && <p>Selected document: {file.name}</p>}
+        {!file && <p>Drag and drop a document here or click to select files</p>}
+      </div>
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ marginTop: '10px', background: '#3498db', '&:hover': { background: '#2980b9' } }}
+        onClick={handleUpload}
+        disabled={!file}
+      >
         Upload
       </Button>
 
@@ -36,6 +68,12 @@ function UploadForm() {
           onClose={handleClosePopup}
         />
       )}
+
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <MuiAlert onClose={handleSnackbarClose} severity="warning" sx={{ width: '100%' }}>
+          Only PDF, DOCX, and TXT files are accepted.
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

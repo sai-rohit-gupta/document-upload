@@ -4,8 +4,11 @@ import './Header.css';
 
 function Header() {
   return (
-    <div>
-      <h1>Just Upload & Print!</h1>
+    <div className="header-container">
+      <div className="background"></div>
+      <div className="content-container">
+        <h1>Just Upload & Print 🖨️</h1>
+      </div>
     </div>
   );
 }

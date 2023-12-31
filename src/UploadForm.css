@@ -6,14 +6,30 @@ div {
     padding: 20px;
   }
   
-  input {
+  .dropzone {
+    border: 2px dashed #3498db;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    background: bisque;
+  }
+  
+  .dropzone span {
+    font-size: 2em;
+    display: block;
     margin-bottom: 10px;
+  }
+  
+  .dropzone p {
+    margin: 0;
   }
   
   button {
     background-color: #3498db;
     color: #ffffff;
     padding: 10px 20px;
+    margin-top: 10px;
     border: none;
     cursor: pointer;
   }
@@ -21,5 +37,4 @@ div {
   button:hover {
     background-color: #2980b9;
   }
-  
   
