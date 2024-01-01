@@ -4,17 +4,25 @@ import { useDropzone } from 'react-dropzone';
 import { Button, Snackbar } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import Popup from './Popup';
+import { getDocument } from 'pdfjs-dist/build/pdf';  // PDF library
+// import mammoth from 'mammoth'; // DOCX library
 import './UploadForm.css';
+import { GlobalWorkerOptions } from 'pdfjs-dist/build/pdf';
+
+
+GlobalWorkerOptions.workerSrc = '/path/to/';
+
 
 function UploadForm() {
   const [file, setFile] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [pageCount, setPageCount] = useState(null);
 
   const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
-    // Assuming you want to handle only the first dropped file
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles[0]);
+      countPages(acceptedFiles[0]);
     }
 
     if (rejectedFiles.length > 0) {
@@ -39,6 +47,24 @@ function UploadForm() {
   const handleClosePopup = () => {
     setShowPopup(false);
     setFile(null);
+    setPageCount(null);
+  };
+
+  const countPages = async (uploadedFile) => {
+    if (uploadedFile.type === 'application/pdf') {
+      const arrayBuffer = await uploadedFile.arrayBuffer();
+      const pdfDocument = await getDocument(new Uint8Array(arrayBuffer)).promise;
+      setPageCount(pdfDocument.numPages);
+    } else if (uploadedFile.type === 'text/plain') {
+      const text = await uploadedFile.text();
+      const lineBreaks = text.split('\n').filter((line) => line.trim() !== '');
+      setPageCount(lineBreaks.length);
+    }//  else if (uploadedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    //   const arrayBuffer = await uploadedFile.arrayBuffer();
+    //   const text = await mammoth.extractRawText({ arrayBuffer });
+    //   const paragraphs = text.split('\n').filter((line) => line.trim() !== '');
+    //   setPageCount(paragraphs.length);
+    // }
   };
 
   return (
@@ -63,7 +89,7 @@ function UploadForm() {
 
       {showPopup && (
         <Popup
-          pageCount={file ? calculatePageCount(file) : 0}
+          pageCount={pageCount !== null ? pageCount : 0}
           onSubmit={handleClosePopup}
           onClose={handleClosePopup}
         />
@@ -76,12 +102,6 @@ function UploadForm() {
       </Snackbar>
     </div>
   );
-}
-
-function calculatePageCount(file) {
-  // Implement logic to calculate page count based on file type
-  // For simplicity, let's assume 10 pages for demonstration purposes
-  return 10;
 }
 
 export default UploadForm;
