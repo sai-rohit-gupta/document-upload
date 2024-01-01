@@ -1,17 +1,10 @@
-// UploadForm.js
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button, Snackbar } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
 import Popup from './Popup';
-import { getDocument } from 'pdfjs-dist/build/pdf';  // PDF library
-// import mammoth from 'mammoth'; // DOCX library
+import { PDFDocument } from 'pdf-lib'; // PDF library
 import './UploadForm.css';
-import { GlobalWorkerOptions } from 'pdfjs-dist/build/pdf';
-
-
-GlobalWorkerOptions.workerSrc = '/path/to/';
-
 
 function UploadForm() {
   const [file, setFile] = useState(null);
@@ -53,8 +46,10 @@ function UploadForm() {
   const countPages = async (uploadedFile) => {
     if (uploadedFile.type === 'application/pdf') {
       const arrayBuffer = await uploadedFile.arrayBuffer();
-      const pdfDocument = await getDocument(new Uint8Array(arrayBuffer)).promise;
-      setPageCount(pdfDocument.numPages);
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      const numPages = pdfDoc.getPageCount();
+      setPageCount(numPages);
+      console.log('Number of pages:', numPages);
     } else if (uploadedFile.type === 'text/plain') {
       const text = await uploadedFile.text();
       const lineBreaks = text.split('\n').filter((line) => line.trim() !== '');
